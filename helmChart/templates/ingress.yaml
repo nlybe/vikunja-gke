@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.application.appName }}-ingress
+  namespace: {{ .Values.application.namespace }}
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: {{ .Values.application.ipAddressName }}
+    kubernetes.io/ingress.allow-http: "true"
+    # cert-manager.io/issuer: letsencrypt-{{ .Values.application.appName }}
+spec:
+  # tls:
+  #   - hosts:
+  #       -  {{ .Values.application.publicURL }}
+  #     secretName: {{ .Values.application.appName }}-ingress-tls
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: {{ .Values.application.appName }}-svc
+            port:
+              name: http
+        path: /*
+        pathType: ImplementationSpecific

@@ -1,0 +1,31 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.application.appName }}-db-pvc
+  labels:
+    app: {{ .Values.application.appName }}
+  namespace: {{ .Values.application.namespace }}
+spec:
+  resources:
+    requests:
+      storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard-rwo
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.application.appName }}-pvc
+  labels:
+    app: {{ .Values.application.appName }}
+  namespace: {{ .Values.application.namespace }}
+spec:
+  resources:
+    requests:
+      storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard-rwo

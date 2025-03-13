@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.application.appName }}-db
+  labels:
+    app: {{ .Values.application.appName }}-db
+  namespace: {{ .Values.application.namespace }}
+spec:
+  replicas: {{ .Values.database.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.application.appName }}-db
+  template:
+    metadata:
+      name: {{ .Values.application.appName }}-db
+      labels:
+        app: {{ .Values.application.appName }}-db
+    spec:
+      containers:
+        - name: mariadb
+          image: "{{ .Values.database.repository }}:{{ .Values.database.appVersion }}"
+          resources:
+            limits:
+              memory: "{{ .Values.database.limitMemory }}"
+            requests:
+              cpu: "{{ .Values.database.requestCPU }}"
+              memory: "{{ .Values.database.requestMemory }}"
+          livenessProbe:
+            exec:
+              command:
+              - bash
+              - -c
+              - mysqladmin -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ping
+            initialDelaySeconds: 5
+            periodSeconds: 2
+            timeoutSeconds: 1
+          readinessProbe:
+            exec:
+              command:
+              - bash
+              - -c
+              - mysqladmin -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          ports:
+            - containerPort: 3306
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.application.appName }}-db-cm
+            - secretRef:
+                name: {{ .Values.application.appName }}-db-sec
+          volumeMounts:
+            - name: mysql-data
+              mountPath: "/var/lib/mysql"
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.application.appName }}-db-pvc

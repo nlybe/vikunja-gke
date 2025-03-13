@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.application.appName }}
+  labels:
+    app: {{ .Values.application.appName }}
+  namespace: {{ .Values.application.namespace }}
+spec:
+  replicas: {{ .Values.application.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.application.appName }}
+  template:
+    metadata:
+      name: {{ .Values.application.appName }}
+      annotations:
+        gke-gcsfuse/volumes: "true"
+      labels:
+        app: {{ .Values.application.appName }}
+    spec:
+      serviceAccountName: vikunja-sa
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: mariadb
+          image: "{{ .Values.application.repository }}:{{ .Values.application.appVersion }}"
+          resources:
+            limits:
+              memory: "{{ .Values.application.limitMemory }}"
+            requests:
+              cpu: "{{ .Values.application.requestCPU }}"
+              memory: "{{ .Values.application.requestMemory }}"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3456
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3456
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          ports:
+            - name: http
+              containerPort: 3456
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.application.appName }}-cm
+            - secretRef:
+                name: {{ .Values.application.appName }}-sec
+          env:
+            - name: VIKUNJA_DATABASE_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.application.appName }}-db-cm
+                  key: MYSQL_DATABASE
+            - name: VIKUNJA_DATABASE_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.application.appName }}-db-cm
+                  key: MYSQL_USER
+            - name: VIKUNJA_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.application.appName }}-db-sec
+                  key: MYSQL_PASSWORD
+          volumeMounts:
+            - name: vikunja-bucket
+              mountPath: /app/vikunja/files
+              readOnly: false
+      volumes:
+        - name: vikunja-bucket
+          csi:
+            driver: gcsfuse.csi.storage.gke.io
+            volumeAttributes:
+              bucketName: {{ .Values.application.cacheStorageBucket }}
+              mountOptions: "implicit-dirs"

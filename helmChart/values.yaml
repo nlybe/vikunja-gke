@@ -1,0 +1,32 @@
+application:
+  appName: vikunja
+  namespace: services
+
+  # vikunja app
+  appVersion: 0.24.6
+  repository: vikunja/vikunja
+  replicaCount: 3
+  requestCPU: 50m
+  requestMemory: 128Mi
+  limitMemory: 1024Mi
+  protocol: http
+  # publicURL: localhost:8080
+  publicURL: demo.example.com
+  cacheStorageBucket: vikunja-bucket-demo
+
+  # ingress
+  ipAddressName: vikunja-ip
+
+  hpaMaxReplicas: 10
+  hpaCpuAverageUtilization: 50
+  hpaMemoryAverageUtilization: 70
+
+database:
+  # appVersion: 11.7
+  appVersion: 10
+  repository: mariadb
+  replicaCount: 1
+  requestCPU: 50m
+  requestMemory: 128Mi
+  limitMemory: 2048Mi
+  

@@ -1,0 +1,45 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vikunja
+  namespace: services
+spec:
+  podSelector:
+    matchLabels:
+      app: vikunja
+  policyTypes:
+  - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: services
+      ports:
+        - protocol: TCP
+          port: 3456
+    - from:
+      - ipBlock:
+          cidr: 0.0.0.0/0
+      ports:
+      - protocol: TCP
+        port: 3456
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vikunja-db
+  namespace: services
+spec:
+  podSelector:
+    matchLabels:
+      app: vikunja-db
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: services
+      ports:
+        - protocol: TCP
+          port: 3306

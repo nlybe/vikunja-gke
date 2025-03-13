@@ -1,0 +1,17 @@
+# This file should be applied once on each environment
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-{{ .Values.application.appName }}
+  namespace: {{ .Values.application.namespace }}
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: your@email.com
+    privateKeySecretRef:
+      name: letsencrypt-{{ .Values.application.appName }}-key
+    solvers:
+    - http01:
+        ingress:
+          class: gce
+          name: {{ .Values.application.appName }}-ingress
