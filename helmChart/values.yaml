@@ -11,7 +11,7 @@ application:
   limitMemory: 1024Mi
   protocol: http
   # publicURL: localhost:8080
-  publicURL: demo.example.com
+  publicURL: demo.lyberakis.gr
   cacheStorageBucket: vikunja-bucket-demo
 
   # ingress
